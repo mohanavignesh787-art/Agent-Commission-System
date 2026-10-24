@@ -6,6 +6,8 @@
 **Project Type:** Frontend-only web development project  
 **Developer:** Data Alcott Systems Free Web Development Internship Online Task Submission  
 
+https://www.freeinternships.in/blog/
+
 ---
 
 ## 1. Project Overview
