@@ -1,0 +1,1640 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CommissionPro – Insurance Agent Commission Tracking & Calculation Platform</title>
+    <meta name="description" content="Comprehensive insurance agent commission management platform for tracking policy sales, calculating tier-based commissions, managing payouts, and evaluating agent performance." />
+    <meta property="og:title" content="CommissionPro – Insurance Agent Commission Tracking & Calculation Platform" />
+    <meta property="og:description" content="Comprehensive insurance agent commission management platform for tracking policy sales, calculating tier-based commissions, managing payouts, and evaluating agent performance." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="/style.css" />
+
+    <!-- External CDN Libraries (Chart.js, Lucide Icons, jsPDF) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  </head>
+  <body>
+    <!-- AUTH VIEW (Displayed when not logged in) -->
+    <div id="authContainer" class="auth-wrapper" style="display: none;">
+      <div class="auth-card">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div class="brand-icon" style="margin: 0 auto 12px; width: 48px; height: 48px; font-size: 1.4rem;">
+            <i data-lucide="shield-check"></i>
+          </div>
+          <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);">CommissionPro</h1>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Insurance Agent Commission Management System</p>
+          <div style="display: inline-block; background: var(--primary-light); color: var(--primary-text); font-size: 0.72rem; font-weight: 700; padding: 2px 10px; border-radius: 12px; margin-top: 6px;">
+            Task ID: WD-LIC-004
+          </div>
+        </div>
+
+        <!-- Quick Demo Role Logins -->
+        <div style="margin-bottom: 20px;">
+          <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">
+            One-Click Demo Access
+          </div>
+          <div class="demo-account-pills">
+            <button type="button" class="demo-pill-btn" onclick="app.quickLogin('admin')">
+              <i data-lucide="crown" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"></i> Admin
+            </button>
+            <button type="button" class="demo-pill-btn" onclick="app.quickLogin('manager')">
+              <i data-lucide="briefcase" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"></i> Manager
+            </button>
+            <button type="button" class="demo-pill-btn" onclick="app.quickLogin('agent')">
+              <i data-lucide="user-check" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"></i> Agent
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+          <button id="authTabLogin" class="btn btn-sm btn-primary" style="flex: 1;" onclick="app.switchAuthTab('login')">Sign In</button>
+          <button id="authTabRegister" class="btn btn-sm btn-secondary" style="flex: 1;" onclick="app.switchAuthTab('register')">Register New</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" onsubmit="app.handleLogin(event)">
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="loginEmail" class="form-input" required placeholder="admin@commissionpro.lic" value="admin@commissionpro.lic" />
+          </div>
+          <div class="form-group" style="margin-bottom: 14px;">
+            <label class="form-label">Password</label>
+            <input type="password" id="loginPassword" class="form-input" required placeholder="••••••••" value="demo1234" />
+          </div>
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label class="form-label">Account Role</label>
+            <select id="loginRole" class="form-select">
+              <option value="admin">Administrator (Full Access)</option>
+              <option value="manager">Branch Manager (Approvals & Teams)</option>
+              <option value="agent">Insurance Agent (My Portfolio)</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%;">
+            <i data-lucide="log-in" style="width: 16px; height: 16px;"></i> Sign In to Dashboard
+          </button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="registerForm" onsubmit="app.handleRegister(event)" style="display: none;">
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label class="form-label">Full Name</label>
+            <input type="text" id="regName" class="form-input" required placeholder="e.g. Ramesh Kumar" />
+          </div>
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="regEmail" class="form-input" required placeholder="name@example.com" />
+          </div>
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label class="form-label">Select Role</label>
+            <select id="regRole" class="form-select">
+              <option value="agent">Insurance Agent</option>
+              <option value="manager">Manager</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 18px;">
+            <label class="form-label">Create Password</label>
+            <input type="password" id="regPassword" class="form-input" required minlength="6" placeholder="Min 6 characters" />
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%;">
+            <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i> Create Account
+          </button>
+        </form>
+
+        <div style="margin-top: 16px; font-size: 0.72rem; color: var(--text-muted); text-align: center;">
+          Educational simulation project. Data persists securely in browser LocalStorage.
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN APPLICATION VIEW -->
+    <div id="appContainer" class="app-layout">
+      <!-- SIDEBAR -->
+      <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+          <a href="#dashboard" class="brand-wrapper" onclick="app.navigate('dashboard')">
+            <div class="brand-icon">
+              <i data-lucide="shield-check" style="width: 22px; height: 22px;"></i>
+            </div>
+            <div class="brand-text">
+              <div class="brand-name">Commission<span>Pro</span></div>
+              <div class="brand-tagline">LIC Agent Platform</div>
+            </div>
+          </a>
+          <button class="sidebar-toggle-btn" onclick="app.toggleSidebar()" title="Toggle Sidebar">
+            <i data-lucide="panel-left-close" id="sidebarCollapseIcon" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+
+        <nav class="sidebar-nav">
+          <div class="nav-section-title">Overview</div>
+          <a href="#dashboard" class="nav-item active" data-page="dashboard" onclick="app.navigate('dashboard', event)">
+            <i data-lucide="layout-dashboard"></i>
+            <span class="nav-text">Dashboard</span>
+          </a>
+          <a href="#leaderboard" class="nav-item" data-page="leaderboard" onclick="app.navigate('leaderboard', event)">
+            <i data-lucide="trophy"></i>
+            <span class="nav-text">Agent Leaderboard</span>
+          </a>
+          <a href="#performance" class="nav-item" data-page="performance" onclick="app.navigate('performance', event)">
+            <i data-lucide="line-chart"></i>
+            <span class="nav-text">Performance Analytics</span>
+          </a>
+
+          <div class="nav-section-title">Commission Core</div>
+          <a href="#calculator" class="nav-item" data-page="calculator" onclick="app.navigate('calculator', event)">
+            <i data-lucide="calculator"></i>
+            <span class="nav-text">Commission Calculator</span>
+          </a>
+          <a href="#history" class="nav-item" data-page="history" onclick="app.navigate('history', event)">
+            <i data-lucide="receipt"></i>
+            <span class="nav-text">Commission History</span>
+          </a>
+          <a href="#payouts" class="nav-item" data-page="payouts" onclick="app.navigate('payouts', event)">
+            <i data-lucide="wallet"></i>
+            <span class="nav-text">Payout Management</span>
+            <span id="pendingPayoutBadge" class="nav-badge">0</span>
+          </a>
+
+          <div class="nav-section-title">Administration</div>
+          <a href="#agents" class="nav-item" data-page="agents" onclick="app.navigate('agents', event)">
+            <i data-lucide="users"></i>
+            <span class="nav-text">Agent Management</span>
+          </a>
+          <a href="#structure" class="nav-item" data-page="structure" onclick="app.navigate('structure', event)">
+            <i data-lucide="layers"></i>
+            <span class="nav-text">Commission Structure</span>
+          </a>
+          <a href="#reports" class="nav-item" data-page="reports" onclick="app.navigate('reports', event)">
+            <i data-lucide="file-spreadsheet"></i>
+            <span class="nav-text">Reports & Analytics</span>
+          </a>
+          <a href="#notifications" class="nav-item" data-page="notifications" onclick="app.navigate('notifications', event)">
+            <i data-lucide="bell"></i>
+            <span class="nav-text">Notifications</span>
+            <span id="unreadNotifBadge" class="nav-badge" style="background: var(--error);">0</span>
+          </a>
+          <a href="#settings" class="nav-item" data-page="settings" onclick="app.navigate('settings', event)">
+            <i data-lucide="settings"></i>
+            <span class="nav-text">Settings & Preferences</span>
+          </a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="sidebar-user">
+            <div id="sidebarUserAvatar" class="user-avatar">AD</div>
+            <div class="user-info">
+              <div id="sidebarUserName" class="user-name">Administrator</div>
+              <div id="sidebarUserRole" class="user-role-badge">ADMIN</div>
+            </div>
+          </div>
+          <button class="sidebar-toggle-btn" onclick="app.logout()" title="Sign Out">
+            <i data-lucide="log-out" style="width: 17px; height: 17px;"></i>
+          </button>
+        </div>
+      </aside>
+
+      <!-- MAIN WRAPPER -->
+      <main class="main-wrapper">
+        <!-- TOPBAR -->
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="mobile-menu-btn" onclick="app.toggleMobileSidebar()">
+              <i data-lucide="menu" style="width: 20px; height: 20px;"></i>
+            </button>
+            <div class="page-breadcrumb">
+              <span>CommissionPro</span>
+              <span>/</span>
+              <span id="currentBreadcrumb" class="current">Dashboard</span>
+            </div>
+          </div>
+
+          <div class="topbar-center">
+            <div class="search-box">
+              <i data-lucide="search" class="search-icon"></i>
+              <input type="text" id="globalSearchInput" placeholder="Quick search agents, policies, or payouts..." oninput="app.handleGlobalSearch(event)" />
+            </div>
+          </div>
+
+          <div class="topbar-right">
+            <!-- Dark Mode Toggle -->
+            <button class="action-icon-btn" onclick="app.toggleDarkMode()" title="Toggle Light / Dark Mode">
+              <i data-lucide="moon" id="themeIcon" style="width: 18px; height: 18px;"></i>
+            </button>
+
+            <!-- Notifications Bell -->
+            <div style="position: relative;">
+              <button class="action-icon-btn" onclick="app.toggleNotificationsPopover()" title="Notifications">
+                <i data-lucide="bell" style="width: 18px; height: 18px;"></i>
+                <span id="topbarNotifDot" class="action-badge" style="display: none;"></span>
+              </button>
+
+              <!-- Notifications Popover -->
+              <div id="notifPopover" class="notifications-panel">
+                <div class="notif-header">
+                  <div style="font-weight: 700; font-size: 0.88rem;">Notifications</div>
+                  <button class="btn btn-sm btn-secondary" onclick="app.markAllNotificationsRead()" style="padding: 2px 8px; font-size: 0.72rem;">Mark all read</button>
+                </div>
+                <div id="notifQuickList" class="notif-list">
+                  <!-- Populated by JS -->
+                </div>
+                <div style="padding: 10px; text-align: center; border-top: 1px solid var(--border);">
+                  <button class="btn btn-sm btn-outline-primary" style="width: 100%;" onclick="app.navigate('notifications'); app.toggleNotificationsPopover(false);">
+                    View All Notifications
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Profile Menu -->
+            <div class="profile-dropdown-wrapper">
+              <div class="profile-trigger" onclick="app.toggleProfileDropdown()">
+                <div id="topbarUserAvatar" class="profile-img">AD</div>
+                <div class="profile-details">
+                  <span id="topbarUserName" class="name">Admin User</span>
+                  <span id="topbarUserRole" class="role">Admin</span>
+                </div>
+                <i data-lucide="chevron-down" style="width: 14px; height: 14px; color: var(--text-muted);"></i>
+              </div>
+
+              <div id="profileDropdown" class="dropdown-menu">
+                <button class="dropdown-item" onclick="app.navigate('performance'); app.toggleProfileDropdown(false);">
+                  <i data-lucide="user" style="width: 16px; height: 16px;"></i> My Profile & Portfolio
+                </button>
+                <button class="dropdown-item" onclick="app.navigate('settings'); app.toggleProfileDropdown(false);">
+                  <i data-lucide="settings" style="width: 16px; height: 16px;"></i> System Settings
+                </button>
+                <div class="dropdown-divider"></div>
+                <div style="padding: 4px 12px; font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Switch Role</div>
+                <button class="dropdown-item" onclick="app.switchRole('admin')">
+                  <i data-lucide="crown" style="width: 14px; height: 14px; color: #D97706;"></i> Switch to Admin
+                </button>
+                <button class="dropdown-item" onclick="app.switchRole('manager')">
+                  <i data-lucide="briefcase" style="width: 14px; height: 14px; color: #2563EB;"></i> Switch to Manager
+                </button>
+                <button class="dropdown-item" onclick="app.switchRole('agent')">
+                  <i data-lucide="user-check" style="width: 14px; height: 14px; color: #16A34A;"></i> Switch to Agent
+                </button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" onclick="app.logout()" style="color: var(--error);">
+                  <i data-lucide="log-out" style="width: 16px; height: 16px;"></i> Sign Out
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- CONTENT VIEWPORT -->
+        <div class="content-area">
+
+          <!-- 1. DASHBOARD VIEW -->
+          <section id="viewDashboard" class="page-view active">
+            <div class="page-header">
+              <div>
+                <h1 class="page-title">Executive Commission Dashboard</h1>
+                <p class="page-subtitle">Real-time insurance commission tracking, policy revenue analytics & agent payout status.</p>
+              </div>
+              <div class="page-actions">
+                <button class="btn btn-outline-primary" onclick="app.navigate('calculator')">
+                  <i data-lucide="plus-circle" style="width: 16px; height: 16px;"></i> New Commission Calculation
+                </button>
+                <button class="btn btn-primary" onclick="app.openAddAgentModal()">
+                  <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i> Add Agent
+                </button>
+                <button class="btn btn-secondary" onclick="app.navigate('payouts')">
+                  <i data-lucide="wallet" style="width: 16px; height: 16px;"></i> Process Payouts
+                </button>
+              </div>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="kpi-grid">
+              <div class="kpi-card">
+                <div class="kpi-header">
+                  <span class="kpi-title">Total Active Agents</span>
+                  <div class="kpi-icon-badge"><i data-lucide="users"></i></div>
+                </div>
+                <div id="kpiTotalAgents" class="kpi-value tabular-nums">0</div>
+                <div class="kpi-footer">
+                  <span class="kpi-trend positive"><i data-lucide="trending-up" style="width: 14px; height: 14px;"></i> 5 Tiers</span>
+                  <span>across branch network</span>
+                </div>
+              </div>
+
+              <div class="kpi-card">
+                <div class="kpi-header">
+                  <span class="kpi-title">Total Policy Sales</span>
+                  <div class="kpi-icon-badge"><i data-lucide="file-check-2"></i></div>
+                </div>
+                <div id="kpiTotalPolicies" class="kpi-value tabular-nums">0</div>
+                <div class="kpi-footer">
+                  <span class="kpi-trend positive"><i data-lucide="shield" style="width: 14px; height: 14px;"></i> Verified</span>
+                  <span>Endowment, Term & ULIP</span>
+                </div>
+              </div>
+
+              <div class="kpi-card">
+                <div class="kpi-header">
+                  <span class="kpi-title">Total Commission Earned</span>
+                  <div class="kpi-icon-badge"><i data-lucide="coins"></i></div>
+                </div>
+                <div id="kpiTotalCommission" class="kpi-value tabular-nums">₹0</div>
+                <div class="kpi-footer">
+                  <span class="kpi-trend positive"><i data-lucide="check-circle" style="width: 14px; height: 14px;"></i> Includes</span>
+                  <span>Base + Performance Bonuses</span>
+                </div>
+              </div>
+
+              <div class="kpi-card">
+                <div class="kpi-header">
+                  <span class="kpi-title">Payouts Completed</span>
+                  <div class="kpi-icon-badge"><i data-lucide="badge-check"></i></div>
+                </div>
+                <div id="kpiPayoutsCompleted" class="kpi-value tabular-nums">₹0</div>
+                <div class="kpi-footer">
+                  <span id="kpiPayoutCount" class="kpi-trend positive">0 transactions</span>
+                  <span>disbursed to date</span>
+                </div>
+              </div>
+
+              <div class="kpi-card">
+                <div class="kpi-header">
+                  <span class="kpi-title">Pending Commissions</span>
+                  <div class="kpi-icon-badge" style="background: var(--warning-bg); color: var(--warning);"><i data-lucide="clock"></i></div>
+                </div>
+                <div id="kpiPendingCommission" class="kpi-value tabular-nums" style="color: var(--warning);">₹0</div>
+                <div class="kpi-footer">
+                  <span id="kpiPendingCount" class="kpi-trend neutral">0 requests</span>
+                  <span>awaiting approval</span>
+                </div>
+              </div>
+
+              <div class="kpi-card">
+                <div class="kpi-header">
+                  <span class="kpi-title">Gross Premium Revenue</span>
+                  <div class="kpi-icon-badge"><i data-lucide="banknote"></i></div>
+                </div>
+                <div id="kpiGrossRevenue" class="kpi-value tabular-nums">₹0</div>
+                <div class="kpi-footer">
+                  <span class="kpi-trend positive"><i data-lucide="arrow-up-right" style="width: 14px; height: 14px;"></i> LIC Underwritten</span>
+                  <span>Cumulative sum</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="dashboard-grid-2">
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <h2 class="card-title">Monthly Commission Trend</h2>
+                    <p class="card-subtitle">Volume of monthly base commission vs bonuses disbursed</p>
+                  </div>
+                  <div class="filter-group">
+                    <span class="tier-tag tier-gold">FY 2025-26</span>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="chart-wrapper">
+                    <canvas id="monthlyTrendChart"></canvas>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <h2 class="card-title">Commission by Agent Tier</h2>
+                    <p class="card-subtitle">Distribution across Platinum, Gold, Silver, Bronze & Starter</p>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="chart-wrapper">
+                    <canvas id="tierDistributionChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Second Row: Payout Status + Leaderboard Strip + Recent Activity -->
+            <div class="dashboard-grid-3">
+              <div class="card">
+                <div class="card-header">
+                  <h2 class="card-title">Payout Status Breakdown</h2>
+                </div>
+                <div class="card-body">
+                  <div class="chart-wrapper" style="height: 220px;">
+                    <canvas id="payoutStatusChart"></canvas>
+                  </div>
+                  <div id="payoutLegendStats" style="margin-top: 16px; font-size: 0.78rem; display: flex; justify-content: space-around; text-align: center;"></div>
+                </div>
+              </div>
+
+              <div class="card" style="grid-column: span 2;">
+                <div class="card-header">
+                  <div>
+                    <h2 class="card-title">Top Performing Agents Leaderboard</h2>
+                    <p class="card-subtitle">Ranked by total eligible premium and commission earnings</p>
+                  </div>
+                  <button class="btn btn-sm btn-secondary" onclick="app.navigate('leaderboard')">Full Leaderboard</button>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                  <div class="table-responsive">
+                    <table class="data-table">
+                      <thead>
+                        <tr>
+                          <th>Rank</th>
+                          <th>Agent</th>
+                          <th>Tier</th>
+                          <th class="num-col">Policies</th>
+                          <th class="num-col">Total Premium</th>
+                          <th class="num-col">Commission</th>
+                        </tr>
+                      </thead>
+                      <tbody id="dashboardLeaderboardTable">
+                        <!-- Populated dynamically -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Transactions & Payouts Strip -->
+            <div class="dashboard-grid-2">
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <h2 class="card-title">Recent Commission Transactions</h2>
+                    <p class="card-subtitle">Latest policy sales recorded in engine</p>
+                  </div>
+                  <button class="btn btn-sm btn-secondary" onclick="app.navigate('history')">View All</button>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                  <div class="table-responsive">
+                    <table class="data-table">
+                      <thead>
+                        <tr>
+                          <th>Policy No.</th>
+                          <th>Agent</th>
+                          <th>Customer</th>
+                          <th class="num-col">Premium</th>
+                          <th class="num-col">Commission</th>
+                        </tr>
+                      </thead>
+                      <tbody id="dashboardRecentTxTable">
+                        <!-- Populated dynamically -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <h2 class="card-title">Recent Payout Activity</h2>
+                    <p class="card-subtitle">Simulated disbursements</p>
+                  </div>
+                  <button class="btn btn-sm btn-secondary" onclick="app.navigate('payouts')">Manage Payouts</button>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                  <div class="table-responsive">
+                    <table class="data-table">
+                      <thead>
+                        <tr>
+                          <th>Payout ID</th>
+                          <th>Agent</th>
+                          <th class="num-col">Amount</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody id="dashboardRecentPayoutsTable">
+                        <!-- Populated dynamically -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 2. AGENT MANAGEMENT VIEW -->
+          <section id="viewAgents" class="page-view">
+            <div class="page-header">
+              <div>
+                <h1 class="page-title">Agent Management</h1>
+                <p class="page-subtitle">Manage registered LIC agents, assigned commission tiers, performance metrics, and account status.</p>
+              </div>
+              <div class="page-actions">
+                <button class="btn btn-primary" onclick="app.openAddAgentModal()">
+                  <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i> Add New Agent
+                </button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="table-filter-bar">
+                <div class="filter-group">
+                  <div class="search-box" style="width: 260px;">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" id="agentSearchInput" placeholder="Search by name or Agent ID..." oninput="app.filterAgents()" />
+                  </div>
+                  <select id="agentTierFilter" class="form-select" onchange="app.filterAgents()">
+                    <option value="">All Tiers</option>
+                    <option value="Platinum">Platinum (30%)</option>
+                    <option value="Gold">Gold (25%)</option>
+                    <option value="Silver">Silver (20%)</option>
+                    <option value="Bronze">Bronze (15%)</option>
+                    <option value="Starter">Starter (10%)</option>
+                  </select>
+                  <select id="agentStatusFilter" class="form-select" onchange="app.filterAgents()">
+                    <option value="">All Statuses</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                </div>
+                <div class="filter-group">
+                  <label class="form-label" style="margin: 0; font-size: 0.75rem;">Sort By:</label>
+                  <select id="agentSortBy" class="form-select" onchange="app.filterAgents()">
+                    <option value="commission-desc">Highest Commission</option>
+                    <option value="policies-desc">Most Policies Sold</option>
+                    <option value="premium-desc">Highest Premium</option>
+                    <option value="name-asc">Agent Name (A-Z)</option>
+                    <option value="date-desc">Newest First</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Agent Info</th>
+                      <th>Agent ID</th>
+                      <th>Contact Details</th>
+                      <th>Assigned Tier</th>
+                      <th class="num-col">Policies Sold</th>
+                      <th class="num-col">Total Premium</th>
+                      <th class="num-col">Commission Earned</th>
+                      <th>Status</th>
+                      <th style="text-align: right;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="agentsTableBody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="pagination-bar">
+                <div id="agentsPaginationInfo">Showing 1 to 10 of 14 agents</div>
+                <div id="agentsPaginationControls" class="pagination-controls">
+                  <!-- Pagination buttons -->
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 3. COMMISSION STRUCTURE VIEW -->
+          <section id="viewStructure" class="page-view">
+            <div class="page-header">
+              <div>
+                <h1 class="page-title">Commission Structure & Rules</h1>
+                <p class="page-subtitle">Configure tiered agent rates, renewal commission models, and performance incentives.</p>
+              </div>
+              <div class="page-actions">
+                <button class="btn btn-outline-primary" onclick="app.resetCommissionStructure()">
+                  <i data-lucide="rotate-ccw" style="width: 16px; height: 16px;"></i> Reset Default Rates
+                </button>
+                <button class="btn btn-primary" onclick="app.saveCommissionStructure()">
+                  <i data-lucide="save" style="width: 16px; height: 16px;"></i> Save Structure Changes
+                </button>
+              </div>
+            </div>
+
+            <div class="dashboard-grid-2">
+              <!-- Tier Rates Table -->
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <h2 class="card-title">Default Agent Tiers & First-Year Rates</h2>
+                    <p class="card-subtitle">Applicable for primary year premium generation</p>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="data-table">
+                      <thead>
+                        <tr>
+                          <th>Tier Name</th>
+                          <th>Min Premium Target</th>
+                          <th>Min Policies</th>
+                          <th>Base Commission Rate (%)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td><span class="tier-tag tier-platinum">Platinum</span></td>
+                          <td>₹15,00,000+</td>
+                          <td>25+</td>
+                          <td>
+                            <input type="number" id="tierRatePlatinum" class="form-input tabular-nums" style="width: 90px;" min="1" max="50" step="0.5" value="30" /> %
+                          </td>
+                        </tr>
+                        <tr>
+                          <td><span class="tier-tag tier-gold">Gold</span></td>
+                          <td>₹10,00,000 - ₹15,00,000</td>
+                          <td>18+</td>
+                          <td>
+                            <input type="number" id="tierRateGold" class="form-input tabular-nums" style="width: 90px;" min="1" max="50" step="0.5" value="25" /> %
+                          </td>
+                        </tr>
+                        <tr>
+                          <td><span class="tier-tag tier-silver">Silver</span></td>
+                          <td>₹5,00,000 - ₹10,00,000</td>
+                          <td>12+</td>
+                          <td>
+                            <input type="number" id="tierRateSilver" class="form-input tabular-nums" style="width: 90px;" min="1" max="50" step="0.5" value="20" /> %
+                          </td>
+                        </tr>
+                        <tr>
+                          <td><span class="tier-tag tier-bronze">Bronze</span></td>
+                          <td>₹2,00,000 - ₹5,00,000</td>
+                          <td>6+</td>
+                          <td>
+                            <input type="number" id="tierRateBronze" class="form-input tabular-nums" style="width: 90px;" min="1" max="50" step="0.5" value="15" /> %
+                          </td>
+                        </tr>
+                        <tr>
+                          <td><span class="tier-tag tier-starter">Starter</span></td>
+                          <td>₹0 - ₹2,00,000</td>
+                          <td>0+</td>
+                          <td>
+                            <input type="number" id="tierRateStarter" class="form-input tabular-nums" style="width: 90px;" min="1" max="50" step="0.5" value="10" /> %
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div style="margin-top: 14px; font-size: 0.76rem; color: var(--text-muted);">
+                    All calculations in the engine will immediately use these saved rates instead of hardcoded numbers.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bonus & Renewal Configuration -->
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <h2 class="card-title">Renewal & Bonus Commission Rules</h2>
+                    <p class="card-subtitle">Configure separate renewal rates and incentive bonuses</p>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Separate Renewal Commission Rate (%)</label>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <input type="number" id="renewalCommissionRate" class="form-input tabular-nums" min="1" max="25" step="0.5" value="7.5" style="width: 120px;" />
+                      <span style="font-size: 0.85rem; color: var(--text-secondary);">% flat on renewal premiums</span>
+                    </div>
+                    <span class="form-hint">Renewal commission does not automatically inherit the tier base rate.</span>
+                  </div>
+
+                  <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">High-Value Policy Threshold (₹)</label>
+                    <input type="number" id="highValueThreshold" class="form-input tabular-nums" value="100000" />
+                    <span class="form-hint">Policies with premium &ge; this amount qualify for high-value bonuses.</span>
+                  </div>
+
+                  <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">High-Value Policy Bonus (%)</label>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <input type="number" id="highValueBonusRate" class="form-input tabular-nums" min="0" max="10" step="0.5" value="2.5" style="width: 120px;" />
+                      <span style="font-size: 0.85rem; color: var(--text-secondary);">% additional bonus</span>
+                    </div>
+                  </div>
+
+                  <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Tier Upgrade Bonus (Flat ₹)</label>
+                    <input type="number" id="tierUpgradeBonusAmount" class="form-input tabular-nums" value="5000" />
+                    <span class="form-hint">Disbursed automatically when an agent moves up a tier.</span>
+                  </div>
+
+                  <div style="background: var(--bg-hover); padding: 12px; border-radius: var(--radius-md); font-size: 0.78rem; color: var(--text-secondary);">
+                    <strong>Formula:</strong><br />
+                    <code>Base Commission = Eligible Premium × Applicable Rate / 100</code><br />
+                    <code>Total Commission = Base Commission + Eligible Bonuses</code>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 4. COMMISSION CALCULATION ENGINE -->
+          <section id="viewCalculator" class="page-view">
+            <div class="page-header">
+              <div>
+                <h1 class="page-title">Commission Calculation Engine</h1>
+                <p class="page-subtitle">Interactive calculator with instant tier lookup, bonus validation, and duplicate prevention.</p>
+              </div>
+            </div>
+
+            <div class="dashboard-grid-2">
+              <!-- Calculator Form -->
+              <div class="card">
+                <div class="card-header">
+                  <div>
+                    <h2 class="card-title">Policy & Commission Details</h2>
+                    <p class="card-subtitle">Input sale parameters to compute payable agent commissions</p>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <form id="calcForm" onsubmit="app.confirmAndSaveCommission(event)">
+                    <div class="form-grid">
+                      <div class="form-group full-width">
+                        <label class="form-label">Select Agent *</label>
+                        <select id="calcAgentSelect" class="form-select" required onchange="app.handleCalcAgentChange()">
+                          <option value="">-- Choose Agent --</option>
+                          <!-- Populated by JS -->
+                        </select>
+                      </div>
+
+                      <div class="form-group">
+                        <label class="form-label">Policy Number *</label>
+                        <input type="text" id="calcPolicyNumber" class="form-input" required placeholder="e.g. POL-84920" oninput="app.recomputeLiveCalculation()" />
+                        <span id="calcDuplicateWarning" style="color: var(--error); font-size: 0.72rem; display: none;">Warning: This policy number already exists!</span>
+                      </div>
+
+                      <div class="form-group">
+                        <label class="form-label">Customer Name *</label>
+                        <input type="text" id="calcCustomerName" class="form-input" required placeholder="e.g. Sunita Deshmukh" oninput="app.recomputeLiveCalculation()" />
+                      </div>
+
+                      <div class="form-group">
+                        <label class="form-label">Policy Type</label>
+                        <select id="calcPolicyType" class="form-select" onchange="app.recomputeLiveCalculation()">
+                          <option value="Endowment Plan">LIC Endowment Assurance Plan</option>
+                          <option value="Jeevan Labh">LIC Jeevan Labh (Limited Premium)</option>
+                          <option value="Jeevan Umang">LIC Jeevan Umang (Whole Life)</option>
+                          <option value="Tech Term">LIC Tech Term Plan</option>
+                          <option value="Money Back">LIC Money Back 20-Year Plan</option>
+                          <option value="SIIP ULIP">LIC SIIP (Unit Linked)</option>
+                          <option value="Saral Pension">LIC Saral Pension Plan</option>
+                        </select>
+                      </div>
+
+                      <div class="form-group">
+                        <label class="form-label">Commission Category *</label>
+                        <select id="calcCategory" class="form-select" onchange="app.recomputeLiveCalculation()">
+                          <option value="first-year">First-Year Policy (Tier Base Rate)</option>
+                          <option value="renewal">Renewal Policy (Special Renewal Rate)</option>
+                        </select>
+                      </div>
+
+                      <div class="form-group">
+                        <label class="form-label">Premium Amount (₹) *</label>
+                        <input type="number" id="calcPremiumAmount" class="form-input tabular-nums" required min="100" step="100" placeholder="e.g. 50000" oninput="app.recomputeLiveCalculation()" />
+                      </div>
+
+                      <div class="form-group">
+                        <label class="form-label">Sale / Booking Date</label>
+                        <input type="date" id="calcSaleDate" class="form-input" required />
+                      </div>
+
+                      <div class="form-group full-width">
+                        <label class="form-label">Optional Performance / Festival Bonus (₹)</label>
+                        <input type="number" id="calcBonusAmount" class="form-input tabular-nums" min="0" step="50" value="0" placeholder="0" oninput="app.recomputeLiveCalculation()" />
+                        <span class="form-hint">Additional bonus on top of base commission (performance or seasonal promotion).</span>
+                      </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; margin-top: 24px;">
+                      <button type="button" class="btn btn-secondary" onclick="app.resetCalcForm()" style="flex: 1;">
+                        Reset Form
+                      </button>
+                      <button type="submit" id="calcSubmitBtn" class="btn btn-primary" style="flex: 2;">
+                        <i data-lucide="check-circle" style="width: 16px; height: 16px;"></i> Confirm & Record Commission
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+
+              <!-- Live Preview Card -->
+              <div>
+                <div class="card">
+                  <div class="card-header">
+                    <div>
+                      <h2 class="card-title">Live Computation Preview</h2>
+                      <p class="card-subtitle">Instant breakdown as values are typed</p>
+                    </div>
+                    <span id="previewTierBadge" class="tier-tag tier-silver">Select Agent</span>
+                  </div>
+                  <div class="card-body">
+                    <div class="calc-preview-card">
+                      <div class="calc-breakdown-row">
+                        <span>Selected Agent:</span>
+                        <strong id="previewAgentName">None selected</strong>
+                      </div>
+                      <div class="calc-breakdown-row">
+                        <span>Applicable Tier:</span>
+                        <span id="previewAgentTier">--</span>
+                      </div>
+                      <div class="calc-breakdown-row">
+                        <span>Eligible Premium Amount:</span>
+                        <span id="previewPremium" class="tabular-nums font-mono font-bold">₹0.00</span>
+                      </div>
+                      <div class="calc-breakdown-row">
+                        <span>Applicable Commission Rate:</span>
+                        <span id="previewRate" class="tabular-nums font-mono font-bold">0.0%</span>
+                      </div>
+                      <div class="calc-breakdown-row">
+                        <span>Base Commission:</span>
+                        <span id="previewBaseComm" class="tabular-nums font-mono font-bold">₹0.00</span>
+                      </div>
+                      <div class="calc-breakdown-row">
+                        <span>High-Value Policy Bonus:</span>
+                        <span id="previewHighValueBonus" class="tabular-nums font-mono">₹0.00</span>
+                      </div>
+                      <div class="calc-breakdown-row">
+                        <span>Manual / Incentive Bonus:</span>
+                        <span id="previewManualBonus" class="tabular-nums font-mono">₹0.00</span>
+                      </div>
+                      <div class="calc-breakdown-row total-row">
+                        <span>Total Payable Commission:</span>
+                        <span id="previewTotalComm" class="tabular-nums font-mono">₹0.00</span>
+                      </div>
+                    </div>
+
+                    <div style="margin-top: 18px; padding: 14px; background: var(--bg-hover); border-radius: var(--radius-md); font-size: 0.76rem; color: var(--text-secondary);">
+                      <i data-lucide="info" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px; color: var(--primary);"></i>
+                      <strong>Validation Safeguards:</strong>
+                      Duplicate policy checks prevent double commissions. Recording saves this transaction immediately into History, updates Agent Performance, and triggers an in-app notification.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 5. COMMISSION PAYOUT MANAGEMENT -->
+          <section id="viewPayouts" class="page-view">
+            <div class="page-header">
+              <div>
+                <h1 class="page-title">Commission Payout Management</h1>
+                <p class="page-subtitle">Track, approve, and disburse agent commission balances with simulated payment workflows.</p>
+              </div>
+              <div class="page-actions">
+                <button class="btn btn-primary" onclick="app.processBulkSelectedPayouts()">
+                  <i data-lucide="layers" style="width: 16px; height: 16px;"></i> Bulk Process Selected (<span id="bulkSelectedCount">0</span>)
+                </button>
+                <button class="btn btn-secondary" onclick="app.exportPayoutsCSV()">
+                  <i data-lucide="download" style="width: 16px; height: 16px;"></i> Export Payouts CSV
+                </button>
+              </div>
+            </div>
+
+            <!-- Payout KPI summary -->
+            <div class="kpi-grid">
+              <div class="kpi-card">
+                <div class="kpi-header"><span class="kpi-title">Total Disbursed (Paid)</span><div class="kpi-icon-badge"><i data-lucide="check"></i></div></div>
+                <div id="payoutKpiPaid" class="kpi-value tabular-nums">₹0</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-header"><span class="kpi-title">Pending Approvals</span><div class="kpi-icon-badge" style="background: var(--warning-bg); color: var(--warning);"><i data-lucide="clock"></i></div></div>
+                <div id="payoutKpiPending" class="kpi-value tabular-nums" style="color: var(--warning);">₹0</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-header"><span class="kpi-title">Under Processing</span><div class="kpi-icon-badge"><i data-lucide="refresh-cw"></i></div></div>
+                <div id="payoutKpiProcessing" class="kpi-value tabular-nums">₹0</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-header"><span class="kpi-title">On Hold / Failed</span><div class="kpi-icon-badge" style="background: var(--error-bg); color: var(--error);"><i data-lucide="alert-circle"></i></div></div>
+                <div id="payoutKpiIssues" class="kpi-value tabular-nums" style="color: var(--error);">₹0</div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="table-filter-bar">
+                <div class="filter-group">
+                  <div class="search-box" style="width: 240px;">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" id="payoutSearchInput" placeholder="Search Agent or Payout ID..." oninput="app.filterPayouts()" />
+                  </div>
+                  <select id="payoutStatusFilter" class="form-select" onchange="app.filterPayouts()">
+                    <option value="">All Statuses</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Processing">Processing</option>
+                    <option value="On Hold">On Hold</option>
+                    <option value="Failed">Failed</option>
+                  </select>
+                </div>
+                <div class="filter-group">
+                  <button class="btn btn-sm btn-outline-primary" onclick="app.selectAllPendingPayouts()">Select All Pending</button>
+                  <button class="btn btn-sm btn-secondary" onclick="app.clearPayoutSelection()">Clear Selection</button>
+                </div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 40px;"><input type="checkbox" id="selectAllPayoutsCheckbox" onchange="app.toggleSelectAllPayouts(event)" /></th>
+                      <th>Payout ID</th>
+                      <th>Agent Details</th>
+                      <th>Period / Details</th>
+                      <th class="num-col">Amount</th>
+                      <th>Payment Method</th>
+                      <th>Status</th>
+                      <th>Request Date</th>
+                      <th style="text-align: right;">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="payoutsTableBody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="pagination-bar">
+                <div id="payoutsPaginationInfo">Showing payouts</div>
+                <div id="payoutsPaginationControls" class="pagination-controls"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 6. AGENT PERFORMANCE VIEW -->
+          <section id="viewPerformance" class="page-view">
+            <div class="page-header">
+              <div>
+                <h1 class="page-title">Agent Performance & Portfolio</h1>
+                <p class="page-subtitle">Individual sales growth, tier progression tracker, and commission earnings breakdown.</p>
+              </div>
+              <div class="page-actions">
+                <select id="perfAgentSelect" class="form-select" onchange="app.loadAgentPerformance()" style="font-weight: 700; width: 240px;">
+                  <!-- Agents list -->
+                </select>
+                <select id="perfPeriodSelect" class="form-select" onchange="app.loadAgentPerformance()">
+                  <option value="all">All Time</option>
+                  <option value="year">Current Financial Year</option>
+                  <option value="quarter">This Quarter</option>
+                  <option value="month">This Month</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Agent Profile Summary Strip -->
+            <div class="card" style="margin-bottom: 24px; padding: 24px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                  <div id="perfAgentAvatar" class="brand-icon" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                    RA
+                  </div>
+                  <div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                      <h2 id="perfAgentName" style="font-size: 1.3rem; font-weight: 800; color: var(--text-main);">Rajesh Sharma</h2>
+                      <span id="perfAgentTierBadge" class="tier-tag tier-platinum">Platinum (30%)</span>
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
+                      Agent ID: <strong id="perfAgentId" class="tabular-nums" style="color: var(--text-main);">AGT-1001</strong> · Joined: <span id="perfAgentJoining">15 Jan 2021</span> · Email: <span id="perfAgentEmail">rajesh.lic@example.com</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 18px;">
+                  <div style="text-align: right;">
+                    <div style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Company Rank</div>
+                    <div id="perfAgentRank" style="font-size: 1.5rem; font-weight: 800; color: var(--primary);">#1</div>
+                  </div>
+                  <div style="height: 36px; width: 1px; background: var(--border);"></div>
+                  <div style="text-align: right;">
+                    <div style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Average Commission/Policy</div>
+                    <div id="perfAvgCommission" style="font-size: 1.5rem; font-weight: 800; color: var(--text-main);" class="tabular-nums">₹12,450</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Tier Progress Section -->
+              <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--border);">
+                <div style="display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 4px;">
+                  <span id="perfTierProgressLabel" style="font-weight: 700; color: var(--text-main);">Tier Progress: Platinum (Top Tier Reached)</span>
+                  <span id="perfTierProgressPct" class="tabular-nums" style="font-weight: 700; color: var(--primary);">100% Target Met</span>
+                </div>
+                <div class="progress-bar-bg">
+                  <div id="perfTierProgressBar" class="progress-bar-fill" style="width: 100%;"></div>
+                </div>
+                <div id="perfTierProgressHint" style="font-size: 0.74rem; color: var(--text-muted); margin-top: 4px;">
+                  Eligible for highest 30% first-year commissions and executive quarterly bonus allocations.
+                </div>
+              </div>
+            </div>
+
+            <!-- Performance Metrics Grid -->
+            <div class="kpi-grid">
+              <div class="kpi-card">
+                <div class="kpi-header"><span class="kpi-title">Policies Sold</span><div class="kpi-icon-badge"><i data-lucide="file-text"></i></div></div>
+                <div id="perfPoliciesCount" class="kpi-value tabular-nums">0</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-header"><span class="kpi-title">Premium Generated</span><div class="kpi-icon-badge"><i data-lucide="shield-alert"></i></div></div>
+                <div id="perfPremiumTotal" class="kpi-value tabular-nums">₹0</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-header"><span class="kpi-title">Total Commission Earned</span><div class="kpi-icon-badge"><i data-lucide="wallet"></i></div></div>
+                <div id="perfCommissionTotal" class="kpi-value tabular-nums" style="color: var(--primary);">₹0</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-header"><span class="kpi-title">Performance Score</span><div class="kpi-icon-badge"><i data-lucide="award"></i></div></div>
+                <div id="perfScoreValue" class="kpi-value tabular-nums">98.5</div>
+              </div>
+            </div>
+
+            <!-- Performance Charts -->
+            <div class="dashboard-grid-2">
+              <div class="card">
+                <div class="card-header">
+                  <h2 class="card-title">Monthly Policies & Premium Volume</h2>
+                </div>
+                <div class="card-body">
+                  <div class="chart-wrapper">
+                    <canvas id="perfSalesChart"></canvas>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <h2 class="card-title">Commission Earnings Breakdown</h2>
+                </div>
+                <div class="card-body">
+                  <div class="chart-wrapper">
+                    <canvas id="perfEarningsChart"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 7. COMMISSION HISTORY VIEW -->
+          <section id="viewHistory" class="page-view">
+            <div class="page-header">
+              <div>
+                <h1 class="page-title">Commission History & Transactions</h1>
+                <p class="page-subtitle">Complete ledger of recorded policy commission events, formulas, bonuses, and payment statuses.</p>
+              </div>
+              <div class="page-actions">
+                <button class="btn btn-outline-primary" onclick="app.exportHistoryCSV()">
+                  <i data-lucide="download" style="width: 16px; height: 16px;"></i> Export History CSV
+                </button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="table-filter-bar">
+                <div class="filter-group">
+                  <div class="search-box" style="width: 260px;">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" id="historySearchInput" placeholder="Search Policy, Tx ID, Customer..." oninput="app.filterHistory()" />
+                  </div>
+                  <select id="historyTypeFilter" class="form-select" onchange="app.filterHistory()">
+                    <option value="">All Categories</option>
+                    <option value="first-year">First-Year Policy</option>
+                    <option value="renewal">Renewal Policy</option>
+                  </select>
+                  <select id="historyStatusFilter" class="form-select" onchange="app.filterHistory()">
+                    <option value="">All Payout Statuses</option>
+                    <option value="Paid">Paid</option>
+                    <option value="Pending">Pending</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Tx ID</th>
+                      <th>Date</th>
+                      <th>Agent</th>
+                      <th>Policy No.</th>
+                      <th>Customer</th>
+                      <th>Type</th>
+                      <th class="num-col">Premium</th>
+                      <th class="num-col">Rate</th>
+                      <th class="num-col">Base Comm</th>
+                      <th class="num-col">Bonus</th>
+                      <th class="num-col">Total Comm</th>
+                      <th>Status</th>
+                      <th style="text-align: right;">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="historyTableBody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="pagination-bar">
+                <div id="historyPaginationInfo">Showing transactions</div>
+                <div id="historyPaginationControls" class="pagination-controls"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 8. REPORTS AND ANALYTICS VIEW -->
+          <section id="viewReports" class="page-view">
+            <div class="page-header">
+              <div>
+                <h1 class="page-title">Reports & Financial Analytics</h1>
+                <p class="page-subtitle">Generate exportable audit-ready statements, tier breakdowns, and payout audit trails.</p>
+              </div>
+              <div class="page-actions">
+                <button class="btn btn-secondary" onclick="app.printCurrentReport()">
+                  <i data-lucide="printer" style="width: 16px; height: 16px;"></i> Print Report
+                </button>
+                <button class="btn btn-secondary" onclick="app.downloadReportPDF()">
+                  <i data-lucide="file-text" style="width: 16px; height: 16px;"></i> Download PDF
+                </button>
+                <button class="btn btn-primary" onclick="app.exportReportCSV()">
+                  <i data-lucide="download" style="width: 16px; height: 16px;"></i> Export CSV
+                </button>
+              </div>
+            </div>
+
+            <!-- Report Configuration Card -->
+            <div class="card" style="margin-bottom: 24px; padding: 20px;">
+              <div style="display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;">
+                <div class="form-group" style="flex: 2; min-width: 240px;">
+                  <label class="form-label">Select Report Template</label>
+                  <select id="reportTemplateSelect" class="form-select" onchange="app.generateSelectedReport()">
+                    <option value="agent-wise">1. Agent-Wise Commission & Sales Report</option>
+                    <option value="monthly-breakdown">2. Monthly Commission Trend & Payouts Report</option>
+                    <option value="tier-performance">3. Tier-Wise Performance & Margin Report</option>
+                    <option value="premium-sales">4. Premium Sales by Policy Type Report</option>
+                    <option value="payout-audit">5. Commission Payout & Disbursal Audit Report</option>
+                    <option value="pending-commissions">6. Outstanding Pending Commission Report</option>
+                    <option value="bonus-incentives">7. Performance & Incentive Bonus Report</option>
+                  </select>
+                </div>
+                <div class="form-group" style="flex: 1; min-width: 140px;">
+                  <label class="form-label">From Date</label>
+                  <input type="date" id="reportDateFrom" class="form-input" onchange="app.generateSelectedReport()" />
+                </div>
+                <div class="form-group" style="flex: 1; min-width: 140px;">
+                  <label class="form-label">To Date</label>
+                  <input type="date" id="reportDateTo" class="form-input" onchange="app.generateSelectedReport()" />
+                </div>
+                <button class="btn btn-primary" onclick="app.generateSelectedReport()">
+                  <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i> Refresh
+                </button>
+              </div>
+            </div>
+
+            <!-- Report Summary Strip -->
+            <div id="reportSummaryStrip" class="kpi-grid" style="margin-bottom: 24px;">
+              <!-- Dynamic metrics based on report -->
+            </div>
+
+            <!-- Report Chart + Table Container -->
+            <div class="card" id="printableReportContainer">
+              <div class="card-header">
+                <div>
+                  <h2 id="reportDisplayTitle" class="card-title">Agent-Wise Commission Report</h2>
+                  <p id="reportDisplaySubtitle" class="card-subtitle">Aggregated totals generated from application state</p>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">
+                  Generated: <span id="reportGeneratedTimestamp" class="tabular-nums"></span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div id="reportChartContainer" class="chart-wrapper" style="height: 260px; margin-bottom: 24px;">
+                  <canvas id="reportDynamicChart"></canvas>
+                </div>
+
+                <div class="table-responsive">
+                  <table class="data-table" id="reportDataTable">
+                    <thead id="reportTableHead"></thead>
+                    <tbody id="reportTableBody"></tbody>
+                    <tfoot id="reportTableFoot"></tfoot>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 9. AGENT LEADERBOARD VIEW -->
+          <section id="viewLeaderboard" class="page-view">
+            <div class="page-header">
+              <div>
+                <h1 class="page-title">Agent Leaderboard & Rankings</h1>
+                <p class="page-subtitle">Recognizing top-performing insurance advisors across premium volume and policies closed.</p>
+              </div>
+              <div class="page-actions">
+                <select id="leaderboardPeriodSelect" class="form-select" onchange="app.renderLeaderboard()">
+                  <option value="all">All-Time Cumulative</option>
+                  <option value="year">FY 2025-26</option>
+                  <option value="quarter">This Quarter</option>
+                  <option value="month">This Month</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Top 3 Podium Cards -->
+            <div class="leaderboard-podium">
+              <!-- Rank 2 -->
+              <div class="podium-card rank-2">
+                <div class="podium-badge">2</div>
+                <div id="podium2Name" class="podium-agent-name">Priya Sundaram</div>
+                <span id="podium2Tier" class="tier-tag tier-gold">Gold</span>
+                <div id="podium2Sales" class="podium-sales tabular-nums">₹18,50,000</div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">Total Premium Generated</div>
+                <div style="margin-top: 10px; font-size: 0.82rem; font-weight: 700; color: var(--text-main);">
+                  Commission: <span id="podium2Commission" class="tabular-nums font-mono">₹4,62,500</span>
+                </div>
+              </div>
+
+              <!-- Rank 1 -->
+              <div class="podium-card rank-1">
+                <div class="podium-badge"><i data-lucide="crown" style="width: 24px; height: 24px;"></i></div>
+                <div id="podium1Name" class="podium-agent-name">Rajesh Sharma</div>
+                <span id="podium1Tier" class="tier-tag tier-platinum">Platinum</span>
+                <div id="podium1Sales" class="podium-sales tabular-nums" style="color: #D97706; font-size: 1.6rem;">₹28,40,000</div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">Total Premium Generated</div>
+                <div style="margin-top: 10px; font-size: 0.85rem; font-weight: 800; color: var(--text-main);">
+                  Commission: <span id="podium1Commission" class="tabular-nums font-mono">₹8,52,000</span>
+                </div>
+              </div>
+
+              <!-- Rank 3 -->
+              <div class="podium-card rank-3">
+                <div class="podium-badge">3</div>
+                <div id="podium3Name" class="podium-agent-name">Amit Patel</div>
+                <span id="podium3Tier" class="tier-tag tier-gold">Gold</span>
+                <div id="podium3Sales" class="podium-sales tabular-nums">₹14,20,000</div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">Total Premium Generated</div>
+                <div style="margin-top: 10px; font-size: 0.82rem; font-weight: 700; color: var(--text-main);">
+                  Commission: <span id="podium3Commission" class="tabular-nums font-mono">₹3,55,000</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Full Ranking Table -->
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">Full Network Standings</h2>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th style="width: 70px;">Rank</th>
+                      <th>Agent Name</th>
+                      <th>Tier</th>
+                      <th class="num-col">Policies Sold</th>
+                      <th class="num-col">Total Premium Generated</th>
+                      <th class="num-col">Total Commission</th>
+                      <th class="num-col">Performance Score</th>
+                    </tr>
+                  </thead>
+                  <tbody id="fullLeaderboardTableBody">
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- 10. NOTIFICATIONS VIEW -->
+          <section id="viewNotifications" class="page-view">
+            <div class="page-header">
+              <div>
+                <h1 class="page-title">System & Commission Notifications</h1>
+                <p class="page-subtitle">Audit trail of calculation executions, payout disbursements, and tier elevations.</p>
+              </div>
+              <div class="page-actions">
+                <button class="btn btn-secondary" onclick="app.markAllNotificationsRead()">
+                  <i data-lucide="check-check" style="width: 16px; height: 16px;"></i> Mark All Read
+                </button>
+                <button class="btn btn-outline-primary" onclick="app.clearAllNotifications()">
+                  <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i> Clear All
+                </button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="table-filter-bar">
+                <div class="filter-group">
+                  <button class="btn btn-sm btn-primary" onclick="app.filterNotificationsTab('all')">All (<span id="notifCountAll">0</span>)</button>
+                  <button class="btn btn-sm btn-secondary" onclick="app.filterNotificationsTab('unread')">Unread</button>
+                  <button class="btn btn-sm btn-secondary" onclick="app.filterNotificationsTab('commission')">Commissions</button>
+                  <button class="btn btn-sm btn-secondary" onclick="app.filterNotificationsTab('payout')">Payouts</button>
+                  <button class="btn btn-sm btn-secondary" onclick="app.filterNotificationsTab('tier')">Tier Upgrades</button>
+                </div>
+              </div>
+              <div id="fullNotificationList" class="notif-list" style="max-height: none;">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+          </section>
+
+          <!-- 11. SETTINGS VIEW -->
+          <section id="viewSettings" class="page-view">
+            <div class="page-header">
+              <div>
+                <h1 class="page-title">Settings & System Preferences</h1>
+                <p class="page-subtitle">Configure display currencies, dark mode defaults, profile information, and data storage.</p>
+              </div>
+              <div class="page-actions">
+                <button class="btn btn-primary" onclick="app.saveSettings()">
+                  <i data-lucide="save" style="width: 16px; height: 16px;"></i> Save Preferences
+                </button>
+              </div>
+            </div>
+
+            <div class="dashboard-grid-2">
+              <div class="card">
+                <div class="card-header">
+                  <h2 class="card-title">General & Localization Preferences</h2>
+                </div>
+                <div class="card-body">
+                  <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Display Currency</label>
+                    <select id="settingCurrency" class="form-select">
+                      <option value="INR">Indian Rupee (₹ INR) - Default</option>
+                      <option value="USD">US Dollar ($ USD)</option>
+                      <option value="EUR">Euro (€ EUR)</option>
+                      <option value="GBP">British Pound (£ GBP)</option>
+                    </select>
+                    <span class="form-hint">All dashboard figures and receipts adapt automatically.</span>
+                  </div>
+
+                  <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Theme Appearance</label>
+                    <select id="settingTheme" class="form-select" onchange="app.setTheme(this.value)">
+                      <option value="light">Light Mode (Clean Amber & Slate)</option>
+                      <option value="dark">Dark Mode (Midnight Blue & Gold)</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Default Table Rows Per Page</label>
+                    <select id="settingPageSize" class="form-select">
+                      <option value="10">10 entries</option>
+                      <option value="25">25 entries</option>
+                      <option value="50">50 entries</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-header">
+                  <h2 class="card-title">Demo Data & Storage Management</h2>
+                </div>
+                <div class="card-body">
+                  <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
+                    All modifications to agents, tiers, calculations, and payouts are persisted in your browser's LocalStorage under key <code>commissionpro_data_v1</code>.
+                  </div>
+
+                  <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="app.exportJsonBackup()">
+                      <i data-lucide="download" style="width: 16px; height: 16px;"></i> Download Complete JSON Data Backup
+                    </button>
+                    <button class="btn btn-danger" onclick="app.promptResetDemoData()">
+                      <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i> Reset All Data to Original Seed State
+                    </button>
+                  </div>
+
+                  <div style="margin-top: 18px; padding: 12px; background: var(--warning-bg); color: var(--warning-text); border-radius: var(--radius-md); font-size: 0.74rem;">
+                    <strong>Academic Project Notice:</strong>
+                    This frontend demonstration application operates locally without external server dependencies. Payouts and authentication are educational simulations.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </main>
+    </div>
+
+    <!-- MODALS CONTAINER -->
+
+    <!-- 1. Add / Edit Agent Modal -->
+    <div id="agentModal" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 id="agentModalTitle" class="modal-title">Add New Insurance Agent</h2>
+          <button class="modal-close-btn" onclick="app.closeModal('agentModal')">
+            <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+        <form id="agentForm" onsubmit="app.handleAgentFormSubmit(event)">
+          <div class="modal-body">
+            <input type="hidden" id="agentFormEditId" />
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label class="form-label">Agent Full Name *</label>
+                <input type="text" id="agentFormName" class="form-input" required placeholder="e.g. Ramesh Chandra" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Agent ID *</label>
+                <input type="text" id="agentFormId" class="form-input" required placeholder="e.g. AGT-1015" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Assigned Tier *</label>
+                <select id="agentFormTier" class="form-select">
+                  <option value="Platinum">Platinum (30%)</option>
+                  <option value="Gold">Gold (25%)</option>
+                  <option value="Silver">Silver (20%)</option>
+                  <option value="Bronze">Bronze (15%)</option>
+                  <option value="Starter" selected>Starter (10%)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email Address *</label>
+                <input type="email" id="agentFormEmail" class="form-input" required placeholder="agent@lic.example.com" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone Number *</label>
+                <input type="tel" id="agentFormPhone" class="form-input" required placeholder="+91 98765 43210" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Joining Date *</label>
+                <input type="date" id="agentFormJoining" class="form-input" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Account Status</label>
+                <select id="agentFormStatus" class="form-select">
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="app.closeModal('agentModal')">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Agent</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 2. View Agent Details Modal -->
+    <div id="viewAgentModal" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 class="modal-title">Agent Profile & Statement</h2>
+          <button class="modal-close-btn" onclick="app.closeModal('viewAgentModal')">
+            <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+        <div class="modal-body" id="viewAgentModalBody">
+          <!-- Populated by JS -->
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="app.closeModal('viewAgentModal')">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Process Payout Modal -->
+    <div id="processPayoutModal" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 class="modal-title">Process Commission Payout</h2>
+          <button class="modal-close-btn" onclick="app.closeModal('processPayoutModal')">
+            <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+        <form id="processPayoutForm" onsubmit="app.handleProcessPayoutSubmit(event)">
+          <div class="modal-body">
+            <input type="hidden" id="processPayoutId" />
+            <div id="processPayoutSummary" style="background: var(--bg-hover); padding: 16px; border-radius: var(--radius-md); margin-bottom: 18px; font-size: 0.85rem;">
+              <!-- Details populated by JS -->
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label class="form-label">Payment Method</label>
+              <select id="processPayoutMethod" class="form-select">
+                <option value="NEFT / RTGS">Bank Transfer (NEFT / RTGS)</option>
+                <option value="IMPS">Direct IMPS Instant Payout</option>
+                <option value="UPI">Corporate UPI Disbursal</option>
+                <option value="Bank Demand Draft">Bank Demand Draft</option>
+              </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label class="form-label">Bank Reference / UTR Number</label>
+              <input type="text" id="processPayoutRef" class="form-input tabular-nums font-mono" required placeholder="e.g. UTR-20251023-8839" />
+            </div>
+
+            <div class="form-group" style="margin-bottom: 14px;">
+              <label class="form-label">Payment Disbursal Date</label>
+              <input type="date" id="processPayoutDate" class="form-input" required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Update Payout Status to</label>
+              <select id="processPayoutNewStatus" class="form-select">
+                <option value="Paid">Mark as Paid (Disbursed)</option>
+                <option value="Processing">Mark as Processing</option>
+                <option value="On Hold">Place On Hold</option>
+                <option value="Failed">Mark as Failed</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="app.closeModal('processPayoutModal')">Cancel</button>
+            <button type="submit" class="btn btn-primary">Confirm Status & Process</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- 4. Payout Receipt / Voucher Modal -->
+    <div id="receiptModal" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2 class="modal-title">Commission Disbursal Receipt</h2>
+          <button class="modal-close-btn" onclick="app.closeModal('receiptModal')">
+            <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+        <div class="modal-body" id="receiptModalBody">
+          <!-- Populated by JS -->
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="window.print()">
+            <i data-lucide="printer" style="width: 14px; height: 14px;"></i> Print Voucher
+          </button>
+          <button class="btn btn-primary" onclick="app.closeModal('receiptModal')">Done</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Delete Agent Confirmation Modal -->
+    <div id="deleteAgentModal" class="modal-overlay">
+      <div class="modal-card" style="max-width: 440px;">
+        <div class="modal-header">
+          <h2 class="modal-title" style="color: var(--error);">Delete Agent Confirmation</h2>
+          <button class="modal-close-btn" onclick="app.closeModal('deleteAgentModal')">
+            <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="deleteAgentId" />
+          <p id="deleteAgentMsg" style="font-size: 0.9rem; color: var(--text-secondary);">
+            Are you sure you want to remove this agent from the system?
+          </p>
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 8px;">
+            Their historical policy transactions and payouts will remain preserved in the ledger for compliance.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="app.closeModal('deleteAgentModal')">Cancel</button>
+          <button type="button" class="btn btn-danger" onclick="app.confirmDeleteAgent()">Delete Agent</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Reset Demo Data Confirmation Modal -->
+    <div id="resetDataModal" class="modal-overlay">
+      <div class="modal-card" style="max-width: 460px;">
+        <div class="modal-header">
+          <h2 class="modal-title" style="color: var(--error);">Reset to Original Seed Data?</h2>
+          <button class="modal-close-btn" onclick="app.closeModal('resetDataModal')">
+            <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            This action will restore all agents, tiers, calculations, and payouts back to the initial 14-agent demo dataset. Any custom records created during this browser session will be reset.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="app.closeModal('resetDataModal')">Cancel</button>
+          <button type="button" class="btn btn-danger" onclick="app.executeResetDemoData()">Yes, Reset Everything</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- APPLICATION JAVASCRIPT -->
+    <script src="/script.js"></script>
+  </body>
+</html>
